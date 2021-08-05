@@ -1,0 +1,47 @@
+/*-------------------VARIABLES--------------------*/
+
+$plomoEquipo: #e7e7e7;
+
+/*-------------UTILIDADES-------------------*/
+
+.fontInherit {
+  font-weight: inherit;
+}
+
+/*------------------BEM-------------------*/
+
+body {
+  padding: 2rem;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.App {
+  border: 1px solid;
+  padding: 2rem;
+}
+
+.box-equipo {
+  background: $plomoEquipo;
+  padding: 1rem;
+
+  &__titulo {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  &__contenedor {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  &__contenedor__jugador {
+    width: 60px;
+    height: 60px;
+    border: 1px solid;
+    border-radius: 50%;
+    margin: 7px;
+  }
+}
+
+/*-------------MEDIA QUERIES -------------------------*/

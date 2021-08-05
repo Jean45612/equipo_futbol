@@ -1,9 +1,11 @@
-import React from "react";
+import Alineacion from "./components/layout/Alineacion";
+import Equipo from "./components/layout/Equipo";
 
 function App() {
   return (
     <div className="App">
-      <h1>Hola mundo</h1>
+      <Equipo />
+      <Alineacion />
     </div>
   );
 }
