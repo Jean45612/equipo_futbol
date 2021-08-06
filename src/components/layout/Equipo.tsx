@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import axios from "axios";
 import { Player } from "../../utils/interfaces/player";
-import Swal from "sweetalert2";
+import { failServer, setTeam } from "../../redux/actions/index";
+import { useAppDispatch, useAppSelector } from "../../hooks/hooksRedux";
 
 const Equipo = () => {
-  const [players, setPlayers] = useState<Player[]>([]);
+  const players = useAppSelector((state) => state.equipo);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     axios
@@ -16,22 +18,24 @@ const Equipo = () => {
         const results: Player[] = response.data.results.map(
           (r: any, index: number) => {
             return {
-              id: index,
+              id: index + 1,
               name: `${r.name.first} ${r.name.last}`,
               photo: r.picture.thumbnail,
               isSelected: false,
             };
           }
         );
-        setPlayers(results);
+        dispatch(setTeam(results));
       })
       .catch(function (error) {
-        Swal.fire({
-          icon: "warning",
-          title: "Oops...",
-          text: "Hubo un problema con nuestro servidor, pronto lo solucionaremos.",
-          timer: 3000,
-        });
+        // Swal.fire({
+        //   icon: "warning",
+        //   title: "Oops...",
+        //   text: "Hubo un problema con nuestro servidor, pronto lo solucionaremos.",
+        //   timer: 3000,
+        // });
+
+        dispatch(failServer());
       });
   }, []);
 
@@ -39,7 +43,7 @@ const Equipo = () => {
     <div className="box-equipo">
       <p className="box-equipo__titulo">Equipo</p>
       <div className="box-equipo__contenedor">
-        {players.map((p) => (
+        {players.map((p: Player) => (
           <div className="box-equipo__contenedor__jugador" key={p.id}>
             <img
               className="box-equipo__contenedor__jugador__img"

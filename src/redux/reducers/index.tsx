@@ -1,11 +1,14 @@
-// import counterReducer from "./counter";
-// import loggedReducer from "./isLogged";
-
 import { combineReducers } from "redux";
+import serverReducer from "./server";
+import equipoReducer from "./equipo";
+import titularReducer from "./titular";
+import suplenteReducer from "./suplente";
 
 const allReducers = combineReducers({
-  //   counter: counterReducer,
-  //   isLogged: loggedReducer,
+  server: serverReducer,
+  equipo: equipoReducer,
+  titular: titularReducer,
+  suplente: suplenteReducer,
 });
 
 export default allReducers;

@@ -4,7 +4,7 @@ import Titulares from "./Titulares";
 
 const Alineacion = () => {
   return (
-    <div>
+    <div className="box-equipo">
       <Titulares />
       <Suplentes />
     </div>
