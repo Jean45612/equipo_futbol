@@ -1,29 +1,21 @@
-import React from "react";
+import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import { useAppSelector } from "../../hooks/hooksRedux";
 import { Player } from "../../utils/interfaces/player";
+import { PlayerItem } from "../common/PlayerItem";
 
 const Titulares = () => {
   const titulares = useAppSelector((state) => state.titular);
   return (
     <>
-      <p className="box-equipo__titulo">Equipo</p>
-      {titulares.length > 0 && (
+      <SortableContext items={titulares} strategy={rectSortingStrategy}>
+        <p className="box-equipo__titulo">Titulares</p>
+
         <div className="box-equipo__contenedor box-equipo__contenedor--border">
           {titulares.map((p: Player) => (
-            <div className="box-equipo__contenedor__jugador" key={p.id}>
-              <img
-                className="box-equipo__contenedor__jugador__img"
-                src={p.photo}
-                alt=""
-              />
-              <span className="box-equipo__contenedor__jugador__tooltip tooltip tooltip--top">
-                {p.name}
-              </span>
-            </div>
+            <PlayerItem key={p.id} player={p} />
           ))}
         </div>
-      )}
-
+      </SortableContext>
       <br />
     </>
   );

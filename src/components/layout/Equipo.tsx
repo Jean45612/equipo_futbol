@@ -1,8 +1,10 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import axios from "axios";
 import { Player } from "../../utils/interfaces/player";
 import { failServer, setTeam } from "../../redux/actions/index";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooksRedux";
+import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
+import { PlayerItem } from "../common/PlayerItem";
 
 const Equipo = () => {
   const players = useAppSelector((state) => state.equipo);
@@ -12,13 +14,11 @@ const Equipo = () => {
     axios
       .get("https://randomuser.me/api/?results=18&gender=male&noinfo")
       .then(function (response) {
-        // console.log("res", response);
-
         //SETEANDO DATOS
         const results: Player[] = response.data.results.map(
           (r: any, index: number) => {
             return {
-              id: index + 1,
+              id: `E${index + 1}`,
               name: `${r.name.first} ${r.name.last}`,
               photo: r.picture.thumbnail,
               isSelected: false,
@@ -40,23 +40,16 @@ const Equipo = () => {
   }, []);
 
   return (
-    <div className="box-equipo">
-      <p className="box-equipo__titulo">Equipo</p>
-      <div className="box-equipo__contenedor">
-        {players.map((p: Player) => (
-          <div className="box-equipo__contenedor__jugador" key={p.id}>
-            <img
-              className="box-equipo__contenedor__jugador__img"
-              src={p.photo}
-              alt=""
-            />
-            <span className="box-equipo__contenedor__jugador__tooltip tooltip tooltip--top">
-              {p.name}
-            </span>
-          </div>
-        ))}
+    <SortableContext items={players} strategy={rectSortingStrategy}>
+      <div className="box-equipo">
+        <p className="box-equipo__titulo">Equipo</p>
+        <div className="box-equipo__contenedor">
+          {players.map((p: Player) => (
+            <PlayerItem key={p.id} player={p} />
+          ))}
+        </div>
       </div>
-    </div>
+    </SortableContext>
   );
 };
 
