@@ -7,7 +7,11 @@ const Titulares = () => {
   const titulares = useAppSelector((state) => state.titular);
   return (
     <>
-      <SortableContext items={titulares} strategy={rectSortingStrategy}>
+      <SortableContext
+        id="contenedorTitular"
+        items={titulares}
+        strategy={rectSortingStrategy}
+      >
         <p className="box-equipo__titulo">Titulares</p>
 
         <div className="box-equipo__contenedor box-equipo__contenedor--border">

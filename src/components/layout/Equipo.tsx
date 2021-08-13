@@ -1,14 +1,21 @@
 import { useEffect } from "react";
 import axios from "axios";
 import { Player } from "../../utils/interfaces/player";
-import { failServer, setTeam } from "../../redux/actions/index";
+import { failServer, setEquipo, setReserva } from "../../redux/actions/index";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooksRedux";
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { PlayerItem } from "../common/PlayerItem";
+import { useDroppable } from "@dnd-kit/core";
 
 const Equipo = () => {
-  const players = useAppSelector((state) => state.equipo);
+  const players = useAppSelector((state) => state.reserva);
   const dispatch = useAppDispatch();
+
+  const id: string = "contenedorReserva";
+
+  const { setNodeRef } = useDroppable({
+    id,
+  });
 
   useEffect(() => {
     axios
@@ -25,25 +32,23 @@ const Equipo = () => {
             };
           }
         );
-        dispatch(setTeam(results));
+        dispatch(setEquipo(results));
+        dispatch(setReserva(results));
       })
       .catch(function (error) {
-        // Swal.fire({
-        //   icon: "warning",
-        //   title: "Oops...",
-        //   text: "Hubo un problema con nuestro servidor, pronto lo solucionaremos.",
-        //   timer: 3000,
-        // });
-
         dispatch(failServer());
       });
   }, []);
 
   return (
-    <SortableContext items={players} strategy={rectSortingStrategy}>
-      <div className="box-equipo">
+    <SortableContext
+      id={id}
+      items={players.map((p: Player) => p.id)}
+      strategy={rectSortingStrategy}
+    >
+      <div className="box-equipo" ref={setNodeRef}>
         <p className="box-equipo__titulo">Equipo</p>
-        <div className="box-equipo__contenedor">
+        <div className="box-equipo__contenedor" >
           {players.map((p: Player) => (
             <PlayerItem key={p.id} player={p} />
           ))}

@@ -6,23 +6,30 @@ export const failServer = () => {
   };
 };
 
-export const setTeam = (t: Player[]) => {
+export const setEquipo = (t: Player[]) => {
   return {
-    type: "SET_TEAM",
+    type: "SET_EQUIPO",
     payload: t,
   };
 };
 
-export const addJugador = (p: Player) => {
+export const setReserva = (t: Player[]) => {
   return {
-    type: "ADD_JUGADOR",
+    type: "SET_RESERVA",
+    payload: t,
+  };
+};
+
+export const addReserva = (p: Player) => {
+  return {
+    type: "ADD_RESERVA",
     payload: p,
   };
 };
 
-export const removeJugador = (p: Player) => {
+export const removeReserva = (p: Player) => {
   return {
-    type: "REMOVE_JUGADOR",
+    type: "REMOVE_RESERVA",
     payload: p,
   };
 };
