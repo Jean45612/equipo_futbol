@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import axios from "axios";
-import { Player } from "../../utils/interfaces/player";
+import { containerId, Player } from "../../utils/interfaces/player";
 import { failServer, setEquipo, setReserva } from "../../redux/actions/index";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooksRedux";
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
@@ -8,11 +8,14 @@ import { PlayerItem } from "../common/PlayerItem";
 import { useDroppable } from "@dnd-kit/core";
 
 const Equipo = () => {
-  const players = useAppSelector((state) => state.reserva);
+  const players = useAppSelector((state) =>
+    state.equipo.filter((r: Player) => r.containerId === "contenedorReserva")
+  );
   const dispatch = useAppDispatch();
 
-  const id: string = "contenedorReserva";
+  const id: containerId = "contenedorReserva";
 
+  /*SI NO PONGO setNodeRef A LOS DIVS, CUANDO NECESITE ACCEDER A LOS ID DE LOS CONTENEDORES NO ME APARECERÁ NADA*/
   const { setNodeRef } = useDroppable({
     id,
   });
@@ -28,12 +31,11 @@ const Equipo = () => {
               id: `E${index + 1}`,
               name: `${r.name.first} ${r.name.last}`,
               photo: r.picture.thumbnail,
-              isSelected: false,
+              containerId: "contenedorReserva",
             };
           }
         );
         dispatch(setEquipo(results));
-        dispatch(setReserva(results));
       })
       .catch(function (error) {
         dispatch(failServer());
@@ -48,7 +50,7 @@ const Equipo = () => {
     >
       <div className="box-equipo" ref={setNodeRef}>
         <p className="box-equipo__titulo">Equipo</p>
-        <div className="box-equipo__contenedor" >
+        <div className="box-equipo__contenedor">
           {players.map((p: Player) => (
             <PlayerItem key={p.id} player={p} />
           ))}

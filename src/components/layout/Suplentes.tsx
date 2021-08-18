@@ -3,7 +3,10 @@ import { useAppSelector } from "../../hooks/hooksRedux";
 import { Player } from "../../utils/interfaces/player";
 
 const Suplentes = () => {
-  const suplentes = useAppSelector((state) => state.suplente);
+  const suplentes = useAppSelector((state) =>
+    state.equipo.filter((r: Player) => r.containerId === "contenedorSuplente")
+  );
+
   return (
     <>
       <p className="box-equipo__titulo">Suplentes</p>

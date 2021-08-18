@@ -8,13 +8,24 @@ interface IProps {
 }
 
 export function PlayerItem({ player }: IProps) {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: player.id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: player.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   } as React.CSSProperties;
+
+  /*SI SE ESTA MOVIENDO EL ITEM*/
+  if (isDragging) {
+    style.margin = 0;
+  }
 
   return (
     <div
