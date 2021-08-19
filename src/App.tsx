@@ -1,6 +1,7 @@
 import { useAppDispatch, useAppSelector } from "./hooks/hooksRedux";
 import Equipo from "./components/layout/Equipo";
 import {
+  closestCorners,
   DndContext,
   DragOverlay,
   KeyboardSensor,
@@ -9,20 +10,24 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 
-import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useState } from "react";
 import Alineacion from "./components/layout/Alineacion";
 import { PlayerItem } from "./components/common/PlayerItem";
-import { Player } from "./utils/interfaces/player";
+import { containerId, Player } from "./utils/interfaces/player";
+import { setEquipo, updatePlayer } from "./redux/actions";
 
 function App() {
   const server = useAppSelector((state) => state.server);
   const equipo = useAppSelector((state) => state.equipo);
   const reserva = useAppSelector((state) =>
-    state.equipo.filter((r: Player) => r.containerId === "contenedorReserva")
+    state.equipo.filter((p: Player) => p.containerId === "contenedorReserva")
   );
   const titulares = useAppSelector((state) =>
-    state.equipo.filter((r: Player) => r.containerId === "contenedorTitular")
+    state.equipo.filter((p: Player) => p.containerId === "contenedorTitular")
+  );
+  const suplentes = useAppSelector((state) =>
+    state.equipo.filter((p: Player) => p.containerId === "contenedorSuplente")
   );
 
   const [activePlayer, setActivePlayer] = useState<Player>();
@@ -36,14 +41,10 @@ function App() {
     })
   );
 
-  const findContainerId = (id: string) => {
+  const findContainerId = (id: string): containerId => {
     // SI EL ID ES EL ID DE UNO DE LOS CONTENEDORES
-    if (
-      ["contenedorTitular", "contenedorReserva", "contenedorSuplente"].some(
-        (element) => element === id
-      )
-    ) {
-      return id;
+    if (idIsContainer(id)) {
+      return id as containerId;
     }
 
     // SI ESTA SIENDO SOLTADO EN UN CONTENEDOR, DEVOLVEMOS EL ID DEL CONTENEDOR
@@ -51,80 +52,141 @@ function App() {
     return equipo.find((e: Player) => e.id === id).containerId;
   };
 
-  const handleDragStart = (event: any) => {
-    const { active } = event;
+  const getItemsContainer = (id: string): Player[] => {
+    switch (id) {
+      case "contenedorTitular":
+        return titulares;
+      case "contenedorReserva":
+        return reserva;
+      case "contenedorSuplente":
+        return suplentes;
+      default:
+        return [];
+    }
+  };
+
+  const idIsContainer = (id: string): boolean => {
+    if (
+      ["contenedorTitular", "contenedorReserva", "contenedorSuplente"].some(
+        (element) => element === id
+      )
+    ) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const handleDragStart = ({ active }: any) => {
     const { id } = active;
 
+    //Mostramos el drag overlay
     setActivePlayer(equipo.find((e: Player) => e.id === id));
   };
 
-  const handleDragOver = (event: any) => {
-    console.log("event", event);
+  const handleDragOver = ({ over, active }: any) => {
+    // console.log("over", over);
+    // console.log("active", active);
 
-    const { active, over } = event;
+    const overId = over?.id;
 
-    if (!over) return;
-
-    const { id } = active;
-
-    const { id: overId } = over;
-
-    const activeContainer = findContainerId(id);
-    const overContainer = findContainerId(overId);
-
-    // console.log("active", activeContainer);
-    // console.log("over", overContainer);
-
-    if (
-      !activeContainer ||
-      !overContainer ||
-      activeContainer === overContainer
-    ) {
+    if (!overId) {
       return;
     }
 
-    // setItems((prev) => {
-    //   const activeContainerItems = prev[activeContainer];
-    //   const overContainerItems = prev[overContainer];
+    //Obtenemos los id de los contenedores
+    const overContainer = findContainerId(overId);
+    const activeContainer = findContainerId(active.id);
 
-    //   // Find the indexes for the items
-    //   const activeIndex = activeContainerItems.findIndex(
-    //     (item) => item.code === id
-    //   );
-    //   const overIndex = overContainerItems.findIndex(
-    //     (item) => item.code === overId
-    //   );
+    // console.log("over container", overContainer);
+    // console.log("active contanter", activeContainer);
 
-    //   let newIndex; // new index of dragging item
+    if (!overContainer || !activeContainer) {
+      return;
+    }
 
-    //   if (overId in prev) {
-    //     // TODO: check here
-    //     // We're at the root droppable of a container
-    //     newIndex = overContainerItems.length + 1;
-    //   } else {
-    //     const isBelowLastItem =
-    //       over &&
-    //       overIndex === overContainerItems.length - 1 &&
-    //       draggingRect.offsetTop > over.rect.offsetTop + over.rect.height;
+    if (activeContainer !== overContainer) {
+      const activeItems = getItemsContainer(activeContainer);
+      const overItems = getItemsContainer(overContainer);
 
-    //     const modifier = isBelowLastItem ? 1 : 0;
+      // console.log("active items", activeItems);
+      // console.log("over items", overItems);
 
-    //     newIndex =
-    //       overIndex >= 0 ? overIndex + modifier : overContainerItems.length + 1;
-    //   }
+      const overIndex = overItems.findIndex(
+        (item: Player) => item.id === overId
+      );
+      const activeIndex = activeItems.findIndex(
+        (item: Player) => item.id === active.id
+      );
 
-    //   return {
-    //     ...prev,
-    //     [activeContainer]: [
-    //       ...prev[activeContainer].filter((item) => item.code !== active.id),
-    //     ],
-    //     [overContainer]: [
-    //       ...prev[overContainer].slice(0, newIndex),
-    //       items[activeContainer][activeIndex],
-    //       ...prev[overContainer].slice(newIndex, prev[overContainer].length),
-    //     ],
-    //   };
-    // });
+      // console.log("active index", activeIndex);
+      // console.log("over index", overIndex);
+
+      let newIndex: number;
+
+      if (idIsContainer(overId)) {
+        newIndex = overItems.length + 1;
+      } else {
+        const isBelowLastItem =
+          over &&
+          overIndex === overItems.length - 1 &&
+          active.rect.current.translated &&
+          active.rect.current.translated.offsetTop >
+            over.rect.offsetTop + over.rect.height;
+
+        const modifier = isBelowLastItem ? 1 : 0;
+
+        newIndex = overIndex >= 0 ? overIndex + modifier : overItems.length + 1;
+      }
+
+      // console.log("newIndex", newIndex);
+
+      dispatch(
+        updatePlayer(activeItems[activeIndex].id, newIndex, overContainer)
+      );
+    }
+  };
+
+  const handleDragEnd = ({ active, over }: any) => {
+    const activeContainer = findContainerId(active.id);
+
+    if (!activeContainer) {
+      setActivePlayer(undefined);
+      return;
+    }
+
+    const overId = over?.id;
+
+    // const overId = over?.id || VOID_ID;
+
+    // if (overId === VOID_ID) {
+    //   setItems((items) => ({
+    //     ...(trashable && over?.id === VOID_ID ? items : clonedItems),
+    //     [VOID_ID]: [],
+    //   }));
+    //   setActivePlayer(undefined);
+    //   return;
+    // }
+
+    const overContainer = findContainerId(overId);
+
+    if (activeContainer && overContainer) {
+      const activeItems = getItemsContainer(activeContainer);
+      const overItems = getItemsContainer(overContainer);
+
+      const overIndex = overItems.findIndex(
+        (item: Player) => item.id === overId
+      );
+      const activeIndex = activeItems.findIndex(
+        (item: Player) => item.id === active.id
+      );
+
+      if (activeIndex !== overIndex) {
+        dispatch(setEquipo(arrayMove(equipo, activeIndex, overIndex)));
+      }
+    }
+
+    setActivePlayer(undefined);
   };
 
   return (
@@ -134,8 +196,8 @@ function App() {
           <DndContext
             sensors={sensors}
             onDragStart={handleDragStart}
-            // onDragEnd={handleDragEnd}
             onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
           >
             <Equipo />
             <Alineacion />

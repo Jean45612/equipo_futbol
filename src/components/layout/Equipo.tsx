@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import axios from "axios";
 import { containerId, Player } from "../../utils/interfaces/player";
-import { failServer, setEquipo, setReserva } from "../../redux/actions/index";
+import { failServer, setEquipo } from "../../redux/actions/index";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooksRedux";
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { PlayerItem } from "../common/PlayerItem";
@@ -31,7 +31,7 @@ const Equipo = () => {
               id: `E${index + 1}`,
               name: `${r.name.first} ${r.name.last}`,
               photo: r.picture.thumbnail,
-              containerId: "contenedorReserva",
+              containerId: id,
             };
           }
         );

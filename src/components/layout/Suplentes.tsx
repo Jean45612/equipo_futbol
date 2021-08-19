@@ -1,34 +1,36 @@
-import React from "react";
+import { useDroppable } from "@dnd-kit/core";
+import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import { useAppSelector } from "../../hooks/hooksRedux";
-import { Player } from "../../utils/interfaces/player";
+import { containerId, Player } from "../../utils/interfaces/player";
+import { PlayerItem } from "../common/PlayerItem";
 
 const Suplentes = () => {
   const suplentes = useAppSelector((state) =>
     state.equipo.filter((r: Player) => r.containerId === "contenedorSuplente")
   );
 
+  const id: containerId = "contenedorSuplente";
+
+  const { setNodeRef } = useDroppable({
+    id,
+  });
+
   return (
-    <>
-      <p className="box-equipo__titulo">Suplentes</p>
-      {suplentes.length > 0 && (
+    <SortableContext
+      id={id}
+      items={suplentes.map((p: Player) => p.id)}
+      strategy={rectSortingStrategy}
+    >
+      <div ref={setNodeRef}>
+        <p className="box-equipo__titulo">Suplentes</p>
+
         <div className="box-equipo__contenedor box-equipo__contenedor--border">
           {suplentes.map((p: Player) => (
-            <div className="box-equipo__contenedor__jugador" key={p.id}>
-              <img
-                className="box-equipo__contenedor__jugador__img"
-                src={p.photo}
-                alt=""
-              />
-              <span className="box-equipo__contenedor__jugador__tooltip tooltip tooltip--top">
-                {p.name}
-              </span>
-            </div>
+            <PlayerItem key={p.id} player={p} />
           ))}
         </div>
-      )}
-
-      <br />
-    </>
+      </div>
+    </SortableContext>
   );
 };
 
