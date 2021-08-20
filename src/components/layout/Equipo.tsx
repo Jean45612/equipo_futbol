@@ -8,12 +8,11 @@ import { PlayerItem } from "../common/PlayerItem";
 import { useDroppable } from "@dnd-kit/core";
 
 const Equipo = () => {
-  const players = useAppSelector((state) =>
-    state.equipo.filter((r: Player) => r.containerId === "contenedorReserva")
-  );
+  const players = useAppSelector((state) => state.equipo.reserva);
+
   const dispatch = useAppDispatch();
 
-  const id: containerId = "contenedorReserva";
+  const id: containerId = "reserva";
 
   /*SI NO PONGO setNodeRef A LOS DIVS, CUANDO NECESITE ACCEDER A LOS ID DE LOS CONTENEDORES NO ME APARECERÁ NADA*/
   const { setNodeRef } = useDroppable({
@@ -31,11 +30,16 @@ const Equipo = () => {
               id: `E${index + 1}`,
               name: `${r.name.first} ${r.name.last}`,
               photo: r.picture.thumbnail,
-              containerId: id,
             };
           }
         );
-        dispatch(setEquipo(results));
+        dispatch(
+          setEquipo({
+            reserva: results,
+            titulares: [],
+            suplentes: [],
+          })
+        );
       })
       .catch(function (error) {
         dispatch(failServer());

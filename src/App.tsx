@@ -1,7 +1,6 @@
 import { useAppDispatch, useAppSelector } from "./hooks/hooksRedux";
 import Equipo from "./components/layout/Equipo";
 import {
-  closestCorners,
   DndContext,
   DragOverlay,
   KeyboardSensor,
@@ -15,20 +14,12 @@ import { useState } from "react";
 import Alineacion from "./components/layout/Alineacion";
 import { PlayerItem } from "./components/common/PlayerItem";
 import { containerId, Player } from "./utils/interfaces/player";
-import { setEquipo, updatePlayer } from "./redux/actions";
+import { setEquipo } from "./redux/actions";
 
 function App() {
   const server = useAppSelector((state) => state.server);
   const equipo = useAppSelector((state) => state.equipo);
-  const reserva = useAppSelector((state) =>
-    state.equipo.filter((p: Player) => p.containerId === "contenedorReserva")
-  );
-  const titulares = useAppSelector((state) =>
-    state.equipo.filter((p: Player) => p.containerId === "contenedorTitular")
-  );
-  const suplentes = useAppSelector((state) =>
-    state.equipo.filter((p: Player) => p.containerId === "contenedorSuplente")
-  );
+  const clonedItems = equipo.reserva;
 
   const [activePlayer, setActivePlayer] = useState<Player>();
 
@@ -43,45 +34,20 @@ function App() {
 
   const findContainerId = (id: string): containerId => {
     // SI EL ID ES EL ID DE UNO DE LOS CONTENEDORES
-    if (idIsContainer(id)) {
+    if (id in equipo) {
       return id as containerId;
     }
-
     // SI ESTA SIENDO SOLTADO EN UN CONTENEDOR, DEVOLVEMOS EL ID DEL CONTENEDOR
-
-    return equipo.find((e: Player) => e.id === id).containerId;
-  };
-
-  const getItemsContainer = (id: string): Player[] => {
-    switch (id) {
-      case "contenedorTitular":
-        return titulares;
-      case "contenedorReserva":
-        return reserva;
-      case "contenedorSuplente":
-        return suplentes;
-      default:
-        return [];
-    }
-  };
-
-  const idIsContainer = (id: string): boolean => {
-    if (
-      ["contenedorTitular", "contenedorReserva", "contenedorSuplente"].some(
-        (element) => element === id
-      )
-    ) {
-      return true;
-    }
-
-    return false;
+    return Object.keys(equipo).find((key) =>
+      equipo[key].some((e: Player) => e.id.includes(id))
+    ) as containerId;
   };
 
   const handleDragStart = ({ active }: any) => {
     const { id } = active;
 
     //Mostramos el drag overlay
-    setActivePlayer(equipo.find((e: Player) => e.id === id));
+    setActivePlayer(clonedItems.find((p: Player) => p.id === id));
   };
 
   const handleDragOver = ({ over, active }: any) => {
@@ -106,8 +72,8 @@ function App() {
     }
 
     if (activeContainer !== overContainer) {
-      const activeItems = getItemsContainer(activeContainer);
-      const overItems = getItemsContainer(overContainer);
+      const activeItems = equipo[activeContainer];
+      const overItems = equipo[overContainer];
 
       // console.log("active items", activeItems);
       // console.log("over items", overItems);
@@ -124,7 +90,8 @@ function App() {
 
       let newIndex: number;
 
-      if (idIsContainer(overId)) {
+      if (overId in equipo) {
+        //SI EL ITEM CAE UNA ZONA VACIA DE CUALQUIERA DE LOS CONTENEDORES
         newIndex = overItems.length + 1;
       } else {
         const isBelowLastItem =
@@ -142,7 +109,22 @@ function App() {
       // console.log("newIndex", newIndex);
 
       dispatch(
-        updatePlayer(activeItems[activeIndex].id, newIndex, overContainer)
+        setEquipo({
+          ...equipo,
+          [activeContainer]: [
+            ...equipo[activeContainer].filter(
+              (p: Player) => p.id !== active.id
+            ),
+          ],
+          [overContainer]: [
+            ...equipo[overContainer].slice(0, newIndex),
+            equipo[activeContainer][activeIndex],
+            ...equipo[overContainer].slice(
+              newIndex,
+              equipo[overContainer].length
+            ),
+          ],
+        })
       );
     }
   };
@@ -171,18 +153,24 @@ function App() {
     const overContainer = findContainerId(overId);
 
     if (activeContainer && overContainer) {
-      const activeItems = getItemsContainer(activeContainer);
-      const overItems = getItemsContainer(overContainer);
-
-      const overIndex = overItems.findIndex(
-        (item: Player) => item.id === overId
-      );
-      const activeIndex = activeItems.findIndex(
+      const activeIndex = equipo[activeContainer].findIndex(
         (item: Player) => item.id === active.id
+      );
+      const overIndex = equipo[overContainer].findIndex(
+        (item: Player) => item.id === overId
       );
 
       if (activeIndex !== overIndex) {
-        dispatch(setEquipo(arrayMove(equipo, activeIndex, overIndex)));
+        dispatch(
+          setEquipo({
+            ...equipo,
+            [overContainer]: arrayMove(
+              equipo[overContainer],
+              activeIndex,
+              overIndex
+            ),
+          })
+        );
       }
     }
 

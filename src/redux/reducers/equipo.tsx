@@ -1,18 +1,13 @@
-import { arrayMove } from "@dnd-kit/sortable";
 import action from "../../utils/interfaces/actionReducer";
-import { Player } from "../../utils/interfaces/player";
+import { contenedorPlayers } from "../../utils/interfaces/contenedorPlayers";
 
-const equipoReducer = (state: Player[] = [], action: action) => {
+const equipoReducer = (
+  state: contenedorPlayers = { reserva: [], titulares: [], suplentes: [] },
+  action: action
+) => {
   switch (action.type) {
     case "SET_EQUIPO": {
       return (state = action.payload);
-    }
-    case "UPDATE_PLAYER": {
-      const index = state.findIndex((p: Player) => p.id === action.payload.id);
-
-      state[index].containerId = action.payload.containerId;
-
-      return arrayMove(state, index, action.payload.newIndex);
     }
     default:
       return state;

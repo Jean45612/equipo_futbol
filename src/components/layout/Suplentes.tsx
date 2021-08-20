@@ -5,11 +5,9 @@ import { containerId, Player } from "../../utils/interfaces/player";
 import { PlayerItem } from "../common/PlayerItem";
 
 const Suplentes = () => {
-  const suplentes = useAppSelector((state) =>
-    state.equipo.filter((r: Player) => r.containerId === "contenedorSuplente")
-  );
+  const suplentes = useAppSelector((state) => state.equipo.suplentes);
 
-  const id: containerId = "contenedorSuplente";
+  const id: containerId = "suplentes";
 
   const { setNodeRef } = useDroppable({
     id,

@@ -1,4 +1,4 @@
-import { containerId, Player } from "../../utils/interfaces/player";
+import { contenedorPlayers } from "../../utils/interfaces/contenedorPlayers";
 
 export const failServer = () => {
   return {
@@ -6,16 +6,9 @@ export const failServer = () => {
   };
 };
 
-export const setEquipo = (t: Player[]) => {
+export const setEquipo = (t: contenedorPlayers) => {
   return {
     type: "SET_EQUIPO",
     payload: t,
-  };
-};
-
-export const updatePlayer = (id: string, index: number, c: containerId) => {
-  return {
-    type: "UPDATE_PLAYER",
-    payload: { id: id, newIndex: index, containerId: c },
   };
 };
